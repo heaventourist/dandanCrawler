@@ -7,6 +7,7 @@ const LIMIT = 2983;
 const USE_LOCAL = true;
 const MAX_CONCURRENT_FETCH = 100;
 const PAGE_SIZE = 20;
+let originalView = [];
 
 let localData = {};
 let localCACHE_FILE_NAMEIndex = 0;
@@ -49,7 +50,7 @@ const onLoad = async (event) => {
   });
 
   if (USE_LOCAL) {
-    currentView = Object.values(localData);
+    originalView = Object.values(localData);
   } else {
     const tmp = await Promise.all(
       range(1, LIMIT).map(async (i) => {
@@ -58,11 +59,15 @@ const onLoad = async (event) => {
         return parentRunner(url);
       })
     );
-    currentView = tmp.flat().filter((item) => !!item);
+    originalView = tmp.flat().filter((item) => !!item);
 
-    saveToLocal(currentView);
+    saveToLocal(originalView);
     localStorage.clear();
   }
+
+  currentView = originalView.sort(
+    (a, b) => parseFloat(b.rate) - parseFloat(a.rate)
+  );
 
   render();
 };
@@ -97,17 +102,17 @@ const onFormSubmit = async (event) => {
     currentYear = year || currentYear;
     currentTitle = title || currentTitle;
     currentRate = rate || currentRate;
-    currentViewIndex = startIndex
-      ? parseInt(startIndex) * PAGE_SIZE
-      : currentViewIndex;
-    currentView = currentView.filter(
-      (item) =>
-        (!classification || item.type.includes(classification)) &&
-        (!country || item.country.includes(country)) &&
-        (!year || item.year.includes(year)) &&
-        (!title || item.title.includes(title)) &&
-        (!rate || parseFloat(rate) <= parseFloat(item.rate))
-    );
+    currentViewIndex = startIndex ? parseInt(startIndex) * PAGE_SIZE : 0;
+    currentView = originalView
+      .filter(
+        (item) =>
+          (!classification || item.type.includes(classification)) &&
+          (!country || item.country.includes(country)) &&
+          (!year || item.year.includes(year)) &&
+          (!title || item.title.includes(title)) &&
+          (!rate || parseFloat(rate) <= parseFloat(item.rate))
+      )
+      .sort((a, b) => parseFloat(b.rate) - parseFloat(a.rate));
   }
 
   render();
