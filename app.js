@@ -22,20 +22,26 @@ let currentRate = "";
 const onLoad = async (event) => {
   const form = document.getElementById("form");
   form.addEventListener("submit", onFormSubmit);
-  const prev = document.getElementById("prev-page");
-  const next = document.getElementById("next-page");
-  prev.addEventListener("click", () => {
-    if (currentViewIndex - PAGE_SIZE >= 0) {
-      currentViewIndex -= PAGE_SIZE;
-      render();
-    }
-  });
-  next.addEventListener("click", () => {
-    if (currentViewIndex + PAGE_SIZE < currentView.length) {
-      currentViewIndex += PAGE_SIZE;
-      render();
-    }
-  });
+  const prevTop = document.getElementById("prev-page-top");
+  const nextTop = document.getElementById("next-page-top");
+  const prevBottom = document.getElementById("prev-page-bottom");
+  const nextBottom = document.getElementById("next-page-bottom");
+  [prevTop, prevBottom].forEach((element) =>
+    element.addEventListener("click", () => {
+      if (currentViewIndex - PAGE_SIZE >= 0) {
+        currentViewIndex -= PAGE_SIZE;
+        render();
+      }
+    })
+  );
+  [nextTop, nextBottom].forEach((element) =>
+    element.addEventListener("click", () => {
+      if (currentViewIndex + PAGE_SIZE < currentView.length) {
+        currentViewIndex += PAGE_SIZE;
+        render();
+      }
+    })
+  );
   const response = await fetch(CACHE_FILE_NAME);
   localData = await response.json();
   Object.keys(localStorage).forEach((k) => {
@@ -281,6 +287,7 @@ const addListToDom = (list) => {
 
     content.appendChild(listElement);
   });
+  window.scrollTo(0, 0);
 };
 
 const saveToLocal = (content) => {
